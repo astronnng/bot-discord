@@ -1,0 +1,34 @@
+services:
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: lavalink
+    user: root
+    restart: unless-stopped
+    ports:
+      - "2333:2333"
+    environment:
+      - SERVER_PORT=2333
+      - SERVER_ADDRESS=0.0.0.0
+    # Removido curl pois a imagem é distroless/minimal e não tem shell/curl
+    # healthcheck removido para evitar travamento se curl não existir
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+      - lavalink-data:/opt/Lavalink/plugins
+    networks:
+      - bot-network
+
+  bot:
+    build: .
+    depends_on:
+      - lavalink
+    env_file: .env
+    environment:
+      - LAVALINK_HOST=lavalink
+    networks:
+      - bot-network
+
+volumes:
+  lavalink-data:
+
+networks:
+  bot-network:
